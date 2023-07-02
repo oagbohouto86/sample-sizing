@@ -208,11 +208,42 @@ With 100 patients in case and 400 in control in each group we have a power of 73
 - $n_1$ and $n_2$ to have a power of $0.9$
 
 ```{r}
-n.for.2p(p1=1/(1+0.8/0.4),p2=0.2,alpha=0.05,ratio=4)
+n.for.2p(p1=1/(1+0.8/0.4),p2=0.2,alpha=0.05,power=0.9,ratio=4)
 ```
 To have a power of 90%, we should have 112 patients in case and 448 in control group.
 
 #### Using sample simulation
+
+We have:
+
+- $p_2=0.2$ as proportion of event in control group\
+- $p_1=\frac{1}{1+\frac{1-p_2}{OR \times p_2}}=\frac{1}{1+\frac{1-0.2}{2 \times 0.2}} \cong 0.33$ as proportion of event in case group\
+- We will do simulation using different size of sample and select the best. From $n_1=100$ and $n_2=400$ to $n_1=200$ and $n_2=800$ with a step of 20.
+
+
+```{r}
+
+
+n1=seq(100,200,20) #variation of case size from 100 to 200 with a step of 20 
+n2=seq(400,800,80) #variation of case size from 400 to 800 with a step of 20
+size=data.frame(n1,n2) #set a frame with couple of n1 n2 as zip in python
+power=rep(NA, nrow(size)) #initialize vector which receive power value of each size
+
+for (i in 1:nrow(size)){
+  set.seed(1)
+  pval<-replicate(500,{
+    y1=rbinom(n=size[i,1],p=1/3,size=1)
+    y2=rbinom(n=size[i,2],p=0.2,size=1)
+    y=rbind(table(y1),table(y2))
+    chisq.test(y)$p.value
+  }) #replicate will perform 500 times the random simulation of two sample with size defined and compute a chi2 test. In p val vector output we will obtain 500 p-values of chi2 test
+power[i]=mean(pval<0.05) # At each i step power is the percent of p value < 0.05 over 500 simulations
+}
+
+sample_size=size[which.max(power),]
+
+```
+
 
 ### Longitunal analysis
 

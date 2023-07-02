@@ -701,28 +701,57 @@ power of 73.5%.</p>
 <ul>
 <li><span class="math inline">\(n_1\)</span> and <span class="math inline">\(n_2\)</span> to have a power of <span class="math inline">\(0.9\)</span></li>
 </ul>
-<pre class="r"><code>n.for.2p(p1=1/(1+0.8/0.4),p2=0.2,alpha=0.05,ratio=4)</code></pre>
+<pre class="r"><code>n.for.2p(p1=1/(1+0.8/0.4),p2=0.2,alpha=0.05,power=0.9,ratio=4)</code></pre>
 <pre><code>## 
 ## Estimation of sample size for testing Ho: p1==p2 
 ## Assumptions: 
 ##  
 ##      alpha = 0.05 
-##      power = 0.8 
+##      power = 0.9 
 ##         p1 = 0.3333333 
 ##         p2 = 0.2 
 ##      n2/n1 = 4 
 ##  
 ## Estimated required sample size: 
 ##  
-##         n1 = 112 
-##         n2 = 448 
-##    n1 + n2 = 560 
+##         n1 = 149 
+##         n2 = 596 
+##    n1 + n2 = 745 
 ## </code></pre>
 <p>To have a power of 90%, we should have 112 patients in case and 448
 in control group.</p>
 </div>
 <div id="using-sample-simulation-2" class="section level4">
 <h4>Using sample simulation</h4>
+<p>We have:</p>
+<ul>
+<li><span class="math inline">\(p_2=0.2\)</span> as proportion of event
+in control group<br />
+</li>
+<li><span class="math inline">\(p_1=\frac{1}{1+\frac{1-p_2}{OR \times
+p_2}}=\frac{1}{1+\frac{1-0.2}{2 \times 0.2}} \cong 0.33\)</span> as
+proportion of event in case group<br />
+</li>
+<li>We will do simulation using different size of sample and select the
+best. From <span class="math inline">\(n_1=100\)</span> and <span class="math inline">\(n_2=400\)</span> to <span class="math inline">\(n_1=200\)</span> and <span class="math inline">\(n_2=800\)</span> with a step of 20.</li>
+</ul>
+<pre class="r"><code>n1=seq(100,200,20) #variation of case size from 100 to 200 with a step of 20 
+n2=seq(400,800,80) #variation of case size from 400 to 800 with a step of 20
+size=data.frame(n1,n2) #set a frame with couple of n1 n2 as zip in python
+power=rep(NA, nrow(size)) #initialize vector which receive power value of each size
+
+for (i in 1:nrow(size)){
+  set.seed(1)
+  pval&lt;-replicate(500,{
+    y1=rbinom(n=size[i,1],p=1/3,size=1)
+    y2=rbinom(n=size[i,2],p=0.2,size=1)
+    y=rbind(table(y1),table(y2))
+    chisq.test(y)$p.value
+  }) #replicate will perform 500 times the random simulation of two sample with size defined and compute a chi2 test. In p val vector output we will obtain 500 p-values of chi2 test
+power[i]=mean(pval&lt;0.05) # At each i step power is the percent of p value &lt; 0.05 over 500 simulations
+}
+
+sample_size=size[which.max(power),]</code></pre>
 </div>
 </div>
 <div id="longitunal-analysis" class="section level3">
