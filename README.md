@@ -1,4 +1,4 @@
-# sample_size
+# Sample sizing in clinical studies
 
 In clinical trial or epidemiological study, one of the critical point is the estimation of the good sample size which will help to grant detection of significant difference and then get a good power for statistical test in our study.
 
